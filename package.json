@@ -1,6 +1,6 @@
 {
     "name": "com.enders.abrimporter",
-    "version": "0.9",
+    "version": "0.9.0",
     "unity": "2019.3",
     "displayName": "ABR Importer",
     "description": "Importer for the Photoshop Brush (ABR) file format.",
