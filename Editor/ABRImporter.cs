@@ -22,15 +22,15 @@ namespace UnityEditor.ABR
                 switch (ver)
                 {
                     case 1:
-                        //this.ReadVer12(ebr, ver, cancellationToken);
+                        ReadVer12(ebr, ver, ctx);
                         break;
 
                     case 2:
-                        //this.ReadVer12(ebr, ver, cancellationToken);
+                        ReadVer12(ebr, ver, ctx);
                         break;
 
                     case 6:
-                        this.ReadVer6(ebr, ctx);
+                        ReadVer6(ebr, ctx);
                         break;
 
                     default:
@@ -119,6 +119,83 @@ namespace UnityEditor.ABR
                 }
             }
         }
+        private void ReadVer12(EndianBinaryReader ebr, int ver, AssetImportContext ctx)
+        {
+            int num = ebr.ReadInt16();
+            for (int i = 0; i < num; i++)
+            {
+
+                int num3 = ebr.ReadInt16();
+                int num4 = ebr.ReadInt32();
+                switch (num3)
+                {
+                    case 1:
+                        if (ver == 1)
+                        {
+                            ebr.ReadBytes(14);
+                        }
+                        if (ver == 2)
+                        {
+                            ebr.ReadBytes(num4);
+                        }
+                        break;
+
+                    case 2:
+                        {
+                            ebr.ReadInt32();
+                            ebr.ReadInt16();
+                            if (ver == 1)
+                            {
+                                ebr.ReadByte();
+                            }
+                            if (ver == 2)
+                            {
+                                int num5 = ebr.ReadInt32();
+                                ebr.ReadBytes(num5 * 2);
+                                ebr.ReadBytes(1);
+                            }
+                            ebr.ReadInt16();
+                            ebr.ReadInt16();
+                            ebr.ReadInt16();
+                            ebr.ReadInt16();
+                            int num6 = ebr.ReadInt32();
+                            int num7 = ebr.ReadInt32();
+                            int num8 = ebr.ReadInt32();
+                            int num9 = ebr.ReadInt32();
+                            ebr.ReadInt16();
+                            int num10 = ebr.ReadByte();
+                            int width = num9 - num7;
+                            int height = num8 - num6;
+
+                            byte[] buffer;
+                            if (num10 == 0)
+                            {
+                                buffer = ebr.ReadBytes(width * height);
+                            }
+                            else
+                            {
+                                int num13 = 0;
+                                for (int k = 0; k < height; k++)
+                                {
+                                    num13 += ebr.ReadInt16();
+                                }
+
+                                byte[] imgdata = ebr.ReadBytes(num13);
+                                buffer = Unpack(imgdata);
+                            }
+
+                            Texture2D tex = CreateImage(width, height, buffer);
+                            tex.alphaIsTransparency = true;
+                            string name = $"{System.IO.Path.GetFileNameWithoutExtension(ctx.assetPath)}_{num}";
+                            tex.name = name;
+                            ctx.AddObjectToAsset(name, tex, tex);
+
+                            break;
+                        }
+                }
+            }
+        }
+
 
         private Texture2D CreateImage(int width, int height, byte[] buffer)
         {
